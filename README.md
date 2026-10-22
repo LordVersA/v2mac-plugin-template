@@ -16,7 +16,8 @@ the Mac as its own app. API: [docs/plugin-api.md](docs/plugin-api.md).
 Samples: `hello-pty` (terminal, ssh-agent) and `hello-gui` (window, clipboard, Shared).
 To release a sample as its own plugin, copy its `Containerfile`, `plugin.json`, `icon.svg` and `base.txt`
 over the root files in a copy of this template. The release workflow packages the root plugin.
-The base digests are placeholders until the first sandbox release; never substitute an unpinned tag.
+In this repo, `hello-pty-v*` and `hello-gui-v*` tags release the corresponding sample; `v*` tags
+release the root plugin. The base files pin SDK release `sdk-v0.1.0`; never substitute an unpinned tag.
 Maintainers: publish the GHCR base packages with public read access and copy the sandbox release's
 `bases.json` into the store before accepting submissions built on them.
 Licence: 0BSD.

@@ -3,17 +3,35 @@
 name: Release
 on:
   push:
-    tags: ["*"]
+    tags: ["v*", "hello-pty-v*", "hello-gui-v*"]
 permissions: { contents: write }
 jobs:
   release:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
+      - name: Select the plugin
+        id: plugin
+        env: { RELEASE_TAG: "${{ github.ref_name }}" }
+        run: |
+          case "$RELEASE_TAG" in
+            hello-pty-v*) dir=hello-pty ;;
+            hello-gui-v*) dir=hello-gui ;;
+            v*) dir=. ;;
+            *) exit 2 ;;
+          esac
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
       - name: Pull the base image
-        run: docker pull "$(cat base.txt)"
+        env: { PLUGIN_DIR: "${{ steps.plugin.outputs.dir }}" }
+        run: docker pull "$(cat "$PLUGIN_DIR/base.txt")"
       - name: Package
-        run: Scripts/package.sh . "$(cat base.txt)" "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}" "https://github.com/${{ github.repository }}" "${{ github.sha }}"
+        env:
+          PLUGIN_DIR: ${{ steps.plugin.outputs.dir }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: Scripts/package.sh "$PLUGIN_DIR" "$(cat "$PLUGIN_DIR/base.txt")" "https://github.com/$GITHUB_REPOSITORY/releases/download/$RELEASE_TAG" "https://github.com/$GITHUB_REPOSITORY" "$GITHUB_SHA"
       - name: Release
-        env: { GH_TOKEN: "${{ github.token }}" }
-        run: gh release create "${{ github.ref_name }}" dist/*.tar dist/plugin.json icon.svg --title "${{ github.ref_name }}" --notes "$(python3 -c 'import json;print(json.load(open("plugin.json")).get("changelog",""))')"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLUGIN_DIR: ${{ steps.plugin.outputs.dir }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release create "$RELEASE_TAG" dist/*.tar dist/plugin.json "$PLUGIN_DIR/icon.svg" --title "$RELEASE_TAG" --notes "$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1])).get("changelog",""))' "$PLUGIN_DIR/plugin.json")"
