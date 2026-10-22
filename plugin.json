@@ -1,0 +1,13 @@
+{
+  "api": 1,
+  "id": "my-plugin",
+  "name": "My Plugin",
+  "version": "0.1.0",
+  "publisher": "Your name",
+  "icon": "icon.svg",
+  "display": "pty",
+  "launch": { "cmd": ["/usr/local/bin/start.sh"], "env": {} },
+  "permissions": [],
+  "changelog": "First version.",
+  "securityNotes": "Asks for no permissions."
+}

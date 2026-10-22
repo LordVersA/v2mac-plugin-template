@@ -1,0 +1,1 @@
+ghcr.io/lordversa/v2mac-base-cli@sha256:REPLACE-WITH-THE-RELEASED-DIGEST

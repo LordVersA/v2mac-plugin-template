@@ -4,14 +4,19 @@
   "name": "Hello Window",
   "version": "0.1.0",
   "publisher": "V2Mac",
-  "source": { "repo": "https://github.com/LordVersA/v2mac-plugin-template", "commit": "" },
-  "from": "base-gui",
-  "layers": [],
+  "icon": "icon.svg",
   "display": "gui",
   "launch": {
-    "cmd": ["/bin/bash", "-c", "{ echo 'Hello from a V2Mac mini VM.'; echo \"Exit IP: $(timeout 10 bash -c 'exec 3<>/dev/tcp/api.ipify.org/80; printf \"GET / HTTP/1.0\\r\\nHost: api.ipify.org\\r\\n\\r\\n\" >&3; tail -n1 <&3')\"; echo 'Shared folder:'; ls ~/Shared 2>&1; echo; echo 'Type here; paste with Cmd-V:'; } > /tmp/hello.txt; exec zenity --text-info --editable --title='Hello Window' --width=900 --height=600 --filename=/tmp/hello.txt"]
+    "cmd": [
+      "/bin/bash",
+      "-c",
+      "{ echo 'Hello from a V2Mac mini VM.'; echo \"Exit: $(cat /run/v2mac/exit.json 2>/dev/null)\"; echo \"Time zone: ${TZ:-unknown}\"; echo 'Shared folder:'; ls ~/Shared 2>&1; echo; echo 'Type here; paste with Cmd-V:'; } > /tmp/hello.txt; exec zenity --text-info --editable --title='Hello Window' --width=900 --height=600 --filename=/tmp/hello.txt"
+    ]
   },
-  "permissions": ["clipboard", "shared"],
+  "permissions": [
+    "clipboard",
+    "shared"
+  ],
   "changelog": "First sample.",
   "securityNotes": "Asks for the clipboard and the Shared folder to show both work."
 }

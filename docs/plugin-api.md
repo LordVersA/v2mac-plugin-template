@@ -1,0 +1,75 @@
+# V2Mac Sandbox plugin API, version 1
+
+A plugin is one app that runs in a V2Mac mini VM and shows on the Mac as its own app
+(`<Name> — <Mini VM>.app`). Every mini VM has its own exit server and can't reach the Mac, other
+mini VMs or the network except through that exit.
+
+## plugin.json
+
+| Field | Required | Meaning |
+|---|---|---|
+| `api` | yes | `1`. Additive only: a V2Mac that knows an older api hides the plugin. |
+| `id` | yes | Letters, digits, `.` and `-`, at most 64. Stays the same across versions. |
+| `name`, `version` | yes | Shown to the user. `name` at most 64 characters. |
+| `display` | yes | `pty`: opens in the user's Terminal. `gui`: its own window. |
+| `launch.cmd` | yes | The command, as a list (no shell unless you run one). |
+| `launch.env` | no | Extra environment, `NAME: value` (no newlines). |
+| `permissions` | no | Any of `clipboard`, `shared`, `ssh-agent`; the user approves them at install. |
+| `publisher`, `changelog`, `securityNotes` | no | Publisher, release notes and permission rationale for store review. |
+| `icon` | no | Release asset filename. API 1 currently generates a tinted Mac icon from the app name. |
+| `settings` | no | Reserved; ignored by api 1. |
+| `from`, `source`, `layers` | filled in | Written by `Scripts/package.sh` at release; don't edit them. |
+
+## What the runtime gives your app
+
+- A home (`/root`) on the mini VM's disk, or in memory when the mini VM is Disposable.
+- `/run/v2mac/exit.json`: `ip`, `country`, `city`, `latitude`, `longitude`, `timezone` of the
+  mini VM's exit. Read-only; replaced atomically when the exit changes (watch the folder with inotify).
+- `TZ`: the exit's time zone at launch.
+- `~/Shared` (currently `gui` only, with `shared`): `~/V2Mac Sandbox/<Mini VM>/Shared` on the Mac. What you write
+  there is marked as downloaded (quarantine).
+- Clipboard (only with `clipboard`, `gui`): the Mac's text reaches you on ⌘V; your copies reach the
+  Mac. The user can switch either direction off per mini VM.
+- `SSH_AUTH_SOCK` (only with `ssh-agent`, `pty`): the Mac's ssh-agent while your app is open.
+- `gui` apps run under sway (fullscreen, no decorations) at the window's size; `pty` apps get a real
+  terminal with resize and signals.
+
+Nothing else: no vsock, no firewall or route changes, no other mini VMs, no Mac paths. Your
+container runs rootless with no capabilities, a read-only root and a seccomp profile.
+
+## Building
+
+`Containerfile` must start `ARG BASE` / `FROM ${BASE}`; `base.txt` names the released base image
+(`base-cli` for `pty`, `base-gui` for `gui`, which brings GTK, fonts, PipeWire and the display tools).
+Install packages from Debian's archive only. `Scripts/package.sh . "$(cat base.txt)" <url prefix>`
+builds the image, saves it and writes `dist/plugin.json`; the release workflow does this at a tag.
+For archive and Docker names, the packager accepts 1–64 ASCII letters, digits, dots or hyphens in
+`id` and `version`, starting with a letter or digit. Run
+`python3 -m unittest discover -s Tests -p '*_test.py'` for its boundary checks.
+
+Each `layers` entry currently holds a complete `docker save` archive, including the base. The
+runtime loads it with Podman; individual OCI blobs are not separate downloads yet. The signed
+index pins the archive's exact bytes. Submission CI checks `from` against the store's `bases.json`;
+the helper checks it against the base list bundled with its own release. Review the Containerfile
+at the pinned source commit too: a manifest's `from` declaration alone does not prove ancestry.
+
+## Local testing
+
+For platform development before GHCR images are released, run `Scripts/build-images.sh` in the
+sandbox repo. Its `out/images/bases.json` lists local references such as
+`base-cli@sha256:<image id>`. From this repo, package a sample with:
+
+```sh
+Scripts/package.sh hello-pty 'base-cli@sha256:<image id>' \
+  http://127.0.0.1:8765 https://github.com/your-name/your-plugin <commit>
+```
+
+Use the resulting manifest and archive in a local index signed with a throwaway Ed25519 test key.
+Build the helper after the base images so it bundles that base list. Serve the index, signature and
+archive on loopback, then launch **V2MacDev** with `V2MAC_SANDBOX_STORE=http://127.0.0.1:8765/`
+and `V2MAC_SANDBOX_STORE_KEY=<base64 public key>`. Add the plugin through that store. Never use the
+production store's signing key for a test. A clean-Mac install remains a release check.
+
+From Folder only reads `plugin.json` and runs on the guest rootfs; it does not build the Containerfile
+or copy files into the image. Use it only for commands already present there. The template's
+`start.sh` needs the packaged image.

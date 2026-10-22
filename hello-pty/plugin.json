@@ -4,15 +4,18 @@
   "name": "Hello Terminal",
   "version": "0.1.0",
   "publisher": "V2Mac",
-  "source": { "repo": "https://github.com/LordVersA/v2mac-plugin-template", "commit": "" },
-  "from": "base-cli",
-  "layers": [],
+  "icon": "icon.svg",
   "display": "pty",
   "launch": {
-    "cmd": ["/bin/bash", "-c", "echo \"Hello from a V2Mac mini VM. Exit: $(timeout 10 bash -c 'exec 3<>/dev/tcp/api.ipify.org/80; printf \"GET / HTTP/1.0\\r\\nHost: api.ipify.org\\r\\n\\r\\n\" >&3; tail -n1 <&3')\"; exec bash -l"],
-    "env": { "PS1": "hello-pty:\\w\\$ " }
+    "cmd": [
+      "/bin/bash",
+      "-c",
+      "echo 'Hello from a V2Mac mini VM.'; echo \"Exit: $(cat /run/v2mac/exit.json 2>/dev/null)\"; echo \"Time zone: ${TZ:-unknown}\"; exec bash -l"
+    ]
   },
-  "permissions": ["ssh-agent"],
+  "permissions": [
+    "ssh-agent"
+  ],
   "changelog": "First sample.",
   "securityNotes": "Asks for ssh-agent so SSH through the mini VM's exit can use your Mac's keys."
 }

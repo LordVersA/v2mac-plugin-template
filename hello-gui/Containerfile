@@ -1,0 +1,4 @@
+# Sample built from the template: FROM the released base-gui.
+ARG BASE
+FROM ${BASE}
+RUN apt-get update && apt-get install -y --no-install-recommends zenity && rm -rf /var/lib/apt/lists/*

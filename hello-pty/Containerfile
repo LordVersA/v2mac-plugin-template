@@ -1,0 +1,3 @@
+# Sample built from the template: FROM the released base-cli.
+ARG BASE
+FROM ${BASE}
