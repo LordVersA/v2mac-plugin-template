@@ -17,7 +17,7 @@ mini VMs or the network except through that exit.
 | `permissions` | no | Any of `clipboard`, `shared`, `ssh-agent`; the user approves them at install. |
 | `publisher`, `changelog`, `securityNotes` | no | Publisher, release notes and permission rationale for store review. |
 | `description` | no | One or two sentences on what the app does, shown in the V2Mac Store window. |
-| `icon` | no | SVG filename in the plugin folder, uploaded as a release asset. At most 64 KB, self-contained: no scripts, no embedded HTML, no external images or links. The store copies it into its signed index; V2Mac shows it in the store and frames it in the mini VM's colour as the Mac app's icon. Without one, the app gets its initial. |
+| `icon` | no | SVG filename in the plugin folder, uploaded as a release asset. At most 64 KB, plain shapes and gradients only (`path`, `rect`, `circle`, `g`, `use`…): no text, images, `style`, scripts, DOCTYPE or references outside the file. The store copies it into its signed index; V2Mac shows it in the store and frames it in the mini VM's colour as the Mac app's icon. Without one, the app gets its initial. |
 | `settings` | no | Reserved; ignored by api 1. |
 | `from`, `source`, `layers` | filled in | Written by `Scripts/package.sh` at release; don't edit them. |
 
