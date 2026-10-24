@@ -16,6 +16,7 @@ mini VMs or the network except through that exit.
 | `launch.env` | no | Extra environment, `NAME: value` (no newlines). |
 | `permissions` | no | Any of `clipboard`, `shared`, `ssh-agent`; the user approves them at install. |
 | `publisher`, `changelog`, `securityNotes` | no | Publisher, release notes and permission rationale for store review. |
+| `description` | no | One or two sentences on what the app does, shown in the V2Mac Store window. |
 | `icon` | no | Release asset filename. API 1 currently generates a tinted Mac icon from the app name. |
 | `settings` | no | Reserved; ignored by api 1. |
 | `from`, `source`, `layers` | filled in | Written by `Scripts/package.sh` at release; don't edit them. |
